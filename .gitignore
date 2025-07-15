@@ -1,0 +1,7 @@
+# files to ignore in the repository
+# This file is used to specify files and directories that should be ignored by Git.
+
+# It is not meant to be executed or run as a script.
+# Ignore video generated
+output_video.mp4
+venv/
