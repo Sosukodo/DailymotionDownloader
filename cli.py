@@ -176,7 +176,7 @@ def download_video_direct(m3u8_url, output_file="output_video.mp4"):
     ]
     print("Downloading...")
     cmd_string = ' '.join(command)
-    print(f"FFMPEG command: \n{cmd_string})
+    print(f"FFMPEG command: \n{cmd_string}")
 
     result = subprocess.run(command, capture_output=True, text=True)
     
