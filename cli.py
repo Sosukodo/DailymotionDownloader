@@ -4,10 +4,28 @@ import sys
 import subprocess
 import os
 
+from pathlib import Path 
 
-video_url = (
-    sys.argv[1] if len(sys.argv) > 1 else input("Enter the Dailymotion video URL: ")
-)
+if len(sys.argv) > 2:
+    video_url = sys.argv[1]
+    base_path = Path(sys.argv[2])
+elif len(sys.argv) > 1:
+    video_url = sys.argv[1]
+    base_path = Path(os.getcwd())
+else:
+    # this is most likely never used
+    #video_url = input("Enter the Dailymotion video URL: ")
+    print("usage: cli.py url [download directory]")
+    exit(0)
+
+if not base_path.is_dir():
+    print(f"{base_path} is not a directory")
+    exit(1)
+
+if not base_path.exists():
+    printf(f"{base_path} does not exist")
+    exit(1)
+
 
 metadata_url = (
     f"https://www.dailymotion.com/player/metadata/video/{video_url.split('/')[-1]}"
@@ -27,8 +45,12 @@ except json.JSONDecodeError as e:
     # quit program
     exit(1)
 
+file_name = metadata["title"] + ".mp4"
+file_path = str(base_path / file_name)
+
 m3u8_url = metadata["qualities"]["auto"][0]["url"]
 print(f"M3U8 URL: {m3u8_url}")
+
 # read m3u8 file
 response = requests.get(m3u8_url)
 if response.status_code == 200:
@@ -153,11 +175,13 @@ def download_video_direct(m3u8_url, output_file="output_video.mp4"):
         output_file,
     ]
     print("Downloading...")
-    
+    cmd_string = ' '.join(command)
+    print(f"FFMPEG command: \n{cmd_string})
+
     result = subprocess.run(command, capture_output=True, text=True)
     
     if result.returncode == 0:
-        print(f"Video downloaded successfully: {output_file}")
+        print(f"Video saved to: {output_file}")
     else:
         print(f"Error downloading video: {result.stderr}")
         print("Trying with re-encoding...")
@@ -175,10 +199,10 @@ def download_video_direct(m3u8_url, output_file="output_video.mp4"):
         ]
         result = subprocess.run(command_reencode, capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"Video downloaded successfully with re-encoding: {output_file}")
+            print(f"Video saved (re-encoded) to: {output_file}")
         else:
             print(f"Failed to download video: {result.stderr}")
 
 
 # Use this instead of downloading segments manually
-download_video_direct(m3u8_url)
+download_video_direct(m3u8_url, file_path)
